@@ -109,6 +109,12 @@ class ResultScreen extends StatelessWidget {
 
   Widget _buildSuccess(BuildContext context, PredictionViewModel viewModel) {
     final prediction = viewModel.prediction!;
+    
+    // ⭐ CASO ESPECIAL: No es una planta
+    if (prediction.className == 'no_plant_detected') {
+      return _buildNotPlantDetected(context, viewModel);
+    }
+    
     final isHealthy = prediction.isHealthy;
 
     return Container(
@@ -341,6 +347,117 @@ class ResultScreen extends StatelessWidget {
               label: const Text('Volver'),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  /// Widget para mostrar cuando NO se detecta una planta en la imagen
+  Widget _buildNotPlantDetected(BuildContext context, PredictionViewModel viewModel) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: EsquemaColor.backgroundGradient,
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Icono grande
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.nature_outlined,
+                  size: 80,
+                  color: Colors.orange,
+                ),
+              ),
+              const SizedBox(height: 32),
+              
+              // Título
+              Text(
+                'No es una planta',
+                style: Tipografia.titulo2.copyWith(
+                  color: Colors.orange.shade700,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              
+              // Descripción
+              Text(
+                'La imagen no parece contener una hoja o planta que pueda ser analizada para detectar enfermedades.',
+                style: Tipografia.cuerpo.copyWith(
+                  color: EsquemaColor.textSecondary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              
+              // Sugerencia
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: EsquemaColor.lightGreen.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.lightbulb_outline,
+                      color: EsquemaColor.primaryGreen,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Por favor, toma una foto de una hoja de planta con buena iluminación.',
+                        style: Tipografia.caption.copyWith(
+                          color: EsquemaColor.darkGreen,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 32),
+              
+              // Botón para otra foto
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    viewModel.reset();
+                    Navigator.of(context).popUntil((route) => route.isFirst);
+                    Navigator.of(context).pushNamed('/camera');
+                  },
+                  icon: const Icon(Icons.camera_alt),
+                  label: const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 4),
+                    child: Text(
+                      'Tomar Otra Foto',
+                      style: TextStyle(fontSize: 18),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              
+              // Botón al inicio
+              TextButton.icon(
+                onPressed: () {
+                  viewModel.reset();
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                },
+                icon: const Icon(Icons.home),
+                label: const Text('Volver al Inicio'),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -2,6 +2,7 @@
 // Proporciona recomendaciones de tratamiento y chatbot agrícola
 // Usa patrón Singleton para optimizar cuota de API gratuita
 
+import 'dart:typed_data';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import '../../config/gemini_config.dart';
 import '../models/treatment_model.dart';
@@ -124,6 +125,49 @@ class GeminiService {
       return response.text ?? 'No se pudo obtener respuesta';
     } catch (e) {
       throw Exception('Error: $e');
+    }
+  }
+
+  /// Valida si una imagen contiene una hoja de planta usando Gemini Vision
+  /// Retorna true si es una planta, false si no lo es
+  Future<bool> validatePlantImage(Uint8List imageBytes) async {
+    if (!isConfigured) {
+      // Si Gemini no está configurado, permitir clasificación (modo offline)
+      return true;
+    }
+
+    try {
+      final prompt = '''Analiza esta imagen y responde SOLO con "SI" o "NO":
+¿Esta imagen muestra una hoja de planta o una planta que pueda tener una enfermedad vegetal?
+
+Responde "SI" si ves:
+- Una hoja de planta (de cualquier tipo)
+- Una planta completa o parte de ella
+- Vegetación que pueda ser analizada para enfermedades
+
+Responde "NO" si ves:
+- Personas, animales, objetos
+- Paisajes sin plantas en primer plano
+- Comida procesada, edificios, vehículos
+- Cualquier cosa que NO sea una planta o hoja
+
+Respuesta (solo SI o NO):''';
+
+      final response = await _model!.generateContent([
+        Content.multi([
+          TextPart(prompt),
+          DataPart('image/jpeg', imageBytes),
+        ]),
+      ]);
+
+      final text = response.text?.trim().toUpperCase() ?? '';
+      
+      // Verificar si la respuesta contiene "SI" o "SÍ"
+      return text.contains('SI') || text.contains('SÍ') || text.startsWith('S');
+    } catch (e) {
+      print('⚠️ Error validando imagen con Gemini: $e');
+      // En caso de error, permitir clasificación para no bloquear
+      return true;
     }
   }
 }

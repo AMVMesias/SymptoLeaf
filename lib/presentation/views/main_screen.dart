@@ -49,50 +49,54 @@ class _MainScreenState extends State<MainScreen> {
           // Chip indicador de modo (clicable)
           Padding(
             padding: const EdgeInsets.only(right: 12, top: 8, bottom: 8),
-            child: GestureDetector(
-              onTap: () {
-                _showModeDialog(context, settingsViewModel);
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: settingsViewModel.mode == PredictionMode.local
-                      ? EsquemaColor.healthyGreen.withOpacity(0.1)
-                      : Colors.blue.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  _showModeDialog(context, settingsViewModel);
+                },
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
                     color: settingsViewModel.mode == PredictionMode.local
-                        ? EsquemaColor.healthyGreen
-                        : Colors.blue,
-                    width: 1.5,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      settingsViewModel.mode == PredictionMode.local
-                          ? Icons.phone_android
-                          : Icons.cloud,
-                      size: 16,
+                        ? EsquemaColor.healthyGreen.withOpacity(0.1)
+                        : Colors.blue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
                       color: settingsViewModel.mode == PredictionMode.local
                           ? EsquemaColor.healthyGreen
                           : Colors.blue,
+                      width: 1.5,
                     ),
-                    const SizedBox(width: 6),
-                    Text(
-                      settingsViewModel.mode == PredictionMode.local
-                          ? 'Local'
-                          : 'Servidor',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        settingsViewModel.mode == PredictionMode.local
+                            ? Icons.phone_android
+                            : Icons.cloud,
+                        size: 16,
                         color: settingsViewModel.mode == PredictionMode.local
                             ? EsquemaColor.healthyGreen
                             : Colors.blue,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 6),
+                      Text(
+                        settingsViewModel.mode == PredictionMode.local
+                            ? 'Local'
+                            : 'Servidor',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: settingsViewModel.mode == PredictionMode.local
+                              ? EsquemaColor.healthyGreen
+                              : Colors.blue,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -151,6 +155,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _showModeDialog(BuildContext context, SettingsViewModel settingsViewModel) {
+    print('🔧 DEBUG: _showModeDialog called'); // Debug
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

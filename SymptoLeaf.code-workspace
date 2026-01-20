@@ -4,13 +4,7 @@
 			"path": "."
 		},
 		{
-			"path": "../pry_consumo_api_rest"
-		},
-		{
 			"path": "../manejo_camara"
-		},
-		{
-			"path": "../../Desktop/Universidad/Lectura/3P/servidor_local"
 		}
 	],
 	"settings": {}

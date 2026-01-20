@@ -1,6 +1,7 @@
 // Datasource para modelo ONNX - Migrado: 12 Enero 2026 02:15 AM
 // ⭐ Fix crítico: Reemplazó TFLite que no funcionaba
 // Ahora el modo local funciona completamente offline con ONNX Runtime
+// ⭐ 15 Enero 2026: Agregada validación con ML Kit para detectar si es planta
 
 import 'dart:io';
 import 'dart:typed_data';
@@ -10,6 +11,7 @@ import 'package:image/image.dart' as img;
 import 'dart:convert';
 import '../models/prediction_model.dart';
 import 'base_datasource.dart';
+import 'plant_validator_service.dart';
 
 class OnnxDataSource implements BaseDataSource {
   OrtSession? _session;
@@ -17,6 +19,9 @@ class OnnxDataSource implements BaseDataSource {
   Map<int, String>? _idxToClass;
   Map<String, dynamic>? _classesEs; // Traducciones al español
   bool _isInitialized = false;
+  
+  // Validador de plantas con ML Kit (offline)
+  final PlantValidatorService _plantValidator = PlantValidatorService();
 
   Future<void> _initialize() async {
     if (_isInitialized) return;
@@ -42,6 +47,9 @@ class OnnxDataSource implements BaseDataSource {
       // Cargar traducciones al español
       final classesEsJson = await rootBundle.loadString('assets/modelo/clases_es.json');
       _classesEs = json.decode(classesEsJson);
+      
+      // Inicializar validador de plantas ML Kit
+      await _plantValidator.initialize();
       
       _isInitialized = true;
       print('✅ Modelo ONNX inicializado: ${_classes!.length} clases (con traducciones ES)');
@@ -72,7 +80,25 @@ class OnnxDataSource implements BaseDataSource {
     try {
       print('📸 Procesando imagen: $imagePath');
       
-      // Leer y procesar imagen
+      // ⭐ VALIDACIÓN CON ML KIT (OFFLINE): Verificar si es una planta
+      print('🔍 Validando imagen con ML Kit (offline)...');
+      final isPlant = await _plantValidator.isPlantImage(imagePath);
+      
+      if (!isPlant) {
+        print('❌ ML Kit indica que NO es una planta');
+        return PredictionModel(
+          className: 'no_plant_detected',
+          plant: 'No detectado',
+          disease: 'No es una planta',
+          confidence: 0.0,
+          isHealthy: false,
+          top3: [],
+        );
+      }
+      
+      print('✅ ML Kit confirma que es una planta, procediendo con clasificación...');
+      
+      // Leer y procesar imagen para ONNX
       final imageFile = File(imagePath);
       final imageBytes = await imageFile.readAsBytes();
       final image = img.decodeImage(imageBytes);

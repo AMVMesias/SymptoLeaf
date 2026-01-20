@@ -1,69 +1,86 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import '../providers/foto_provider.dart';
 import '../models/foto.dart';
+import '../providers/foto_provider.dart';
 
 class FotoController {
-  final FotoProvider fotoProvider;
-  final ImagePicker picker = ImagePicker();
+  final FotoProvider provider;
+  final ImagePicker _picker = ImagePicker();
 
-  FotoController(this.fotoProvider);
+  FotoController(this.provider);
 
-  // Método para tomar foto desde cámara
+  /// Captura una foto usando la cámara del dispositivo
   Future<void> tomarFoto(BuildContext context) async {
-    final XFile? foto = await picker.pickImage(
-      source: ImageSource.camera,
-      maxWidth: 1024,
-      maxHeight: 1024,
-      imageQuality: 85,
-    );
-
-    if (foto != null) {
-      final nueva = Foto(
-        path: foto.path,
-        nombre: "Foto ${fotoProvider.fotos.length + 1}",
-        description: 'Foto tomada el ${DateTime.now()}',
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 85,
       );
 
-      // Agregar la foto al proveedor
-      fotoProvider.agregarFoto(nueva);
+      if (image != null) {
+        final foto = Foto(
+          path: image.path,
+          nombre: image.name,
+          description: 'Capturada desde cámara',
+        );
+        provider.agregarFoto(foto);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Foto guardada de forma correcta...!"),
-          behavior: SnackBarBehavior.floating,
-          duration: Duration(seconds: 2),
-        ),
-      );
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Foto capturada exitosamente'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al capturar foto: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
-  // Método para seleccionar desde galería
+  /// Selecciona una foto de la galería del dispositivo
   Future<void> seleccionarGaleria(BuildContext context) async {
-    final XFile? foto = await picker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 1024,
-      maxHeight: 1024,
-      imageQuality: 85,
-    );
-
-    if (foto != null) {
-      final nueva = Foto(
-        path: foto.path,
-        nombre: "Foto ${fotoProvider.fotos.length + 1}",
-        description: 'Seleccionada de galería el ${DateTime.now()}',
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
       );
 
-      // Agregar la foto al proveedor
-      fotoProvider.agregarFoto(nueva);
+      if (image != null) {
+        final foto = Foto(
+          path: image.path,
+          nombre: image.name,
+          description: 'Importada desde galería',
+        );
+        provider.agregarFoto(foto);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Imagen seleccionada de la galería"),
-          behavior: SnackBarBehavior.floating,
-          duration: Duration(seconds: 2),
-        ),
-      );
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Foto importada exitosamente'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al importar foto: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 }
+
